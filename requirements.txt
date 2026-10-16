@@ -1,0 +1,10 @@
+# Probado con: Python 3.13, pandas 3.0 y 2.2, numpy 2.5, scikit-learn 1.9, scipy 1.18, lightgbm 4.7, yfinance 1.7, ib_async 2.1
+pandas>=2.2
+numpy>=1.26
+scikit-learn>=1.4
+scipy>=1.10
+requests>=2.31
+lightgbm>=4.3
+yfinance>=0.2.54
+ib_async>=1.0
+pytest>=8.0

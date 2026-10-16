@@ -1,0 +1,88 @@
+# Configuración del proyecto ml-inversion-etf.
+# Cambia valores aquí; el código no tiene números mágicos escondidos.
+
+[universo]
+# ETFs líquidos y variados (acciones EE.UU., internacionales, bonos, oro, inmobiliario, sectores).
+# Todos tienen historia desde ~2005, así que el backtest cubre crisis 2008, 2020 y 2022.
+tickers = ["SPY", "QQQ", "IWM", "EFA", "EEM", "TLT", "IEF", "GLD", "VNQ", "XLK", "XLF", "XLE", "XLV", "XLP"]
+benchmark = "SPY"       # baseline "comprar y mantener"
+inicio = "2004-01-01"   # se usa ~1 año extra solo para calcular las features
+
+[features]
+# VIX y pendiente de tasas (10 años - 3 meses). Son iguales para todos los ETFs en una fecha,
+# así que solo le sirven a LightGBM (interacciones). Desactivadas por defecto.
+macro = false
+
+[estrategia]
+top_k = 3               # cuántos ETFs se compran cada mes
+ponderacion = "igual"   # "igual" o "inv_vol" (más peso a los menos volátiles)
+min_activos = 6         # los meses con menos ETFs disponibles se descartan
+
+[walkforward]
+min_entrenamiento_meses = 60   # el primer entrenamiento usa al menos 5 años
+meses_prueba = 12              # el modelo se reentrena una vez al año
+
+[costos]
+# Supuestos conservadores aproximados a IBKR Pro (tarifa fija). Revisa las tarifas vigentes.
+capital_inicial_usd = 10000
+comision_bps = 0.5             # comisión proporcional (0,5 bps = 0,005 %)
+comision_minima_usd = 1.0      # mínimo por orden: con capital chico pesa más que la comisión proporcional
+slippage_bps = 5.0             # spread + deslizamiento por lado
+banda_rebalanceo_usd = 100     # no ajusta una posición existente si la diferencia es menor a esto
+
+[metricas]
+tasa_libre_riesgo_anual = 0.0  # para Sharpe y Sortino; con 0 igual sirve para comparar estrategias
+
+[modelos]
+ridge_alpha = 10.0
+logistica_C = 0.1
+
+[modelos.lgbm]
+# Árboles chicos y muchas muestras por hoja: con ~3.000 filas, LightGBM sobreajusta fácil.
+n_estimators = 200
+learning_rate = 0.03
+max_depth = 3
+num_leaves = 8
+min_child_samples = 50
+subsample = 0.8
+colsample_bytree = 0.8
+reg_lambda = 1.0
+
+[experimentos.tendencia]
+# Fase 3: en vez de elegir ETFs, decidir cada mes si estar en acciones o en un refugio.
+# Las 4 variantes (2 señales x 2 refugios) están fijas en el código a propósito: decidirlas
+# antes de ver los resultados es lo que evita encontrar algo "bueno" por suerte.
+activo_riesgo = "SPY"
+refugios = ["IEF", "SHY"]      # IEF = bonos del Tesoro 7-10 años · SHY = bonos 1-3 años (casi caja)
+
+[simulador]
+# Plan de aportes periódicos con los datos históricos: python -m etfml simulador
+aporte_mensual_clp = 100000
+tipo_cambio_clp = 981            # pesos por dólar al 15-10-2026: actualízalo cuando lo uses
+plazos_anios = [3, 5, 10, 15]
+cartera = "global"               # "global" (como VT), "eeuu" (como SPY/VOO) o "conservadora" (70 % global, 30 % bonos)
+spread_cambio = 0.01             # costo de cambiar pesos a dólares (supuesto: 1 %; compara el dólar que te dan con el observado)
+retencion_dividendos = 0.0025    # EE.UU. retiene 15 % de los dividendos (convenio vigente desde 2024): ~0,25 % al año
+interes_espera_anual = 0.0       # interés de la plata que espera en el banco antes de cada transferencia a IB
+
+[simulador.btg]
+comision_orden_usd = 1.0         # "desde US$1 por operación" (sitio de BTG, octubre de 2026)
+orden_minima_usd = 20            # orden mínima en acciones y ETFs de EE.UU.
+meses_entre_compras = [1, 2, 3]  # con montos chicos, juntar 2 o 3 meses diluye la comisión fija
+
+[simulador.ib]
+comision_por_accion_usd = 0.005  # IBKR Pro, tarifa fija
+comision_minima_usd = 1.0
+comision_maxima_pct = 0.01       # la comisión nunca supera el 1 % de la orden
+swift_usd = 25                   # banco chileno ($10.000-25.000 por envío) + posibles cobros de bancos intermediarios
+precio_referencia_usd = 130      # precio aproximado de una cuota del ETF (solo importa en órdenes muy grandes)
+meses_entre_transferencias = [1, 3, 6, 12]
+
+[ib]
+host = "127.0.0.1"
+puerto = 7497                  # TWS paper = 7497 · IB Gateway paper = 4002
+client_id = 17
+modelo = "ensamble"            # "ridge", "logistica", "lgbm" o "ensamble"
+colchon_caja = 0.02            # 2 % queda en caja para cubrir cambios de precio y comisiones
+tipo_orden = "MKT"             # "MKT" (a mercado) o "MOC" (al cierre, como asume el backtest)
+permitir_cuenta_real = false   # con false se niega a operar en cuentas que no sean paper (DU...)
