@@ -1,4 +1,6 @@
 """Walk-forward: purga correcta, detecta señal real y no inventa señal en ruido puro."""
+from itertools import pairwise
+
 import numpy as np
 import pandas as pd
 
@@ -24,7 +26,7 @@ def test_out_of_sample_covers_each_month_once(with_signal):
     pred = result.walkforward.predictions
     assert not pred.index.duplicated().any()
     folds = result.walkforward.folds
-    for a, b in zip(folds, folds[1:]):
+    for a, b in pairwise(folds):
         assert a.test_last < b.test_first
 
 

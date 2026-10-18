@@ -563,9 +563,9 @@ def format_console(res: SavingsResult) -> str:
 
     a = res.amounts_table
     at = pd.DataFrame({
-        "Mejor en BTG": [f"{frequency_label(k)} ({money(m, v)})" for k, v in zip(a["btg_mejor"], a["btg_costos"])],
-        "Mejor en IB": [f"{frequency_label(k)} ({money(m, v)})" for k, v in zip(a["ib_mejor"], a["ib_costos"])],
-        "Conviene": [("BTG" if b >= i else "IB") for b, i in zip(a["btg_mediana"], a["ib_mediana"])],
+        "Mejor en BTG": [f"{frequency_label(k)} ({money(m, v)})" for k, v in zip(a["btg_mejor"], a["btg_costos"], strict=True)],
+        "Mejor en IB": [f"{frequency_label(k)} ({money(m, v)})" for k, v in zip(a["ib_mejor"], a["ib_costos"], strict=True)],
+        "Conviene": [("BTG" if b >= i else "IB") for b, i in zip(a["btg_mediana"], a["ib_mediana"], strict=True)],
     })
     at.index = a["aporte_clp"].map(_clp)
     lines += [f"¿Dónde y cada cuánto comprar según el aporte? (a {res.main_years} años; entre paréntesis, costos totales)",

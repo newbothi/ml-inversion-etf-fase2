@@ -1,0 +1,4 @@
+# Herramientas de calidad (además de lo necesario para correr el proyecto)
+-r requirements.txt
+pytest-cov>=5.0
+ruff==0.17.*

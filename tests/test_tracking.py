@@ -1,6 +1,7 @@
 """Seguimiento: una cuenta paper simulada día a día contra lo que reconstruye el comando."""
 from dataclasses import replace
-from datetime import datetime, timezone
+from datetime import UTC, datetime
+from itertools import pairwise
 from types import SimpleNamespace
 
 import numpy as np
@@ -62,7 +63,7 @@ def simulate_account(market: MarketData, cfg, *, delay_days: int = 0, slip_bps: 
         # dividendos cobrados en caja desde el último rebalanceo
         if last_d is not None:
             ratio = (adj / raw).loc[last_d:d]
-            for t_prev, t in zip(ratio.index[:-1], ratio.index[1:]):
+            for t_prev, t in pairwise(ratio.index):
                 for tk, q in shares.items():
                     f_prev, f_now = ratio.at[t_prev, tk], ratio.at[t, tk]
                     if not np.isclose(f_prev, f_now):
@@ -246,9 +247,9 @@ def _fill(exec_id, when, side, shares, price, commission, account=ACCOUNT, repor
 
 
 def test_fills_to_frame_converts_ib_fills():
-    late_utc = datetime(2025, 11, 4, 1, 0, tzinfo=timezone.utc)  # 20:00 del 3 de nov. en Nueva York
+    late_utc = datetime(2025, 11, 4, 1, 0, tzinfo=UTC)  # 20:00 del 3 de nov. en Nueva York
     df = fills_to_frame([
-        _fill("A", datetime(2025, 11, 3, 20, 30, tzinfo=timezone.utc), "BOT", 10, 500.0, 1.0),
+        _fill("A", datetime(2025, 11, 3, 20, 30, tzinfo=UTC), "BOT", 10, 500.0, 1.0),
         _fill("B", late_utc, "SLD", 5, 501.0, 0.0, report_id=""),           # comisión aún no informada
         _fill("C", late_utc, "BOT", 1, 1.0, 1.7976931348623157e308),        # valor "sin dato" de IB
         _fill("D", late_utc, "BOT", 1, 1.0, 1.0, account="U999"),            # otra cuenta
@@ -262,7 +263,7 @@ def test_fills_to_frame_converts_ib_fills():
 
 def test_save_fills_dedupes_and_updates_commission(tmp_path, cfg):
     c = replace(cfg, logs_dir=tmp_path)
-    when = datetime(2025, 11, 3, 20, 30, tzinfo=timezone.utc)
+    when = datetime(2025, 11, 3, 20, 30, tzinfo=UTC)
     first = fills_to_frame([_fill("A", when, "BOT", 10, 500.0, 0.0, report_id="")], ACCOUNT)
     assert save_fills(c, first) == 1
     later = fills_to_frame([_fill("A", when, "BOT", 10, 500.0, 1.25),

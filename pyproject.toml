@@ -1,0 +1,29 @@
+# Configuración de herramientas (el proyecto no se instala como paquete: se corre con python -m etfml)
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "slow: tests que corren el flujo completo (más de ~3 segundos). Omítelos con: pytest -m \"not slow\"",
+]
+filterwarnings = [
+    # un aviso de pandas o numpy hoy es un error en su próxima versión: mejor enterarse ya
+    "error::FutureWarning",
+    "error::DeprecationWarning:etfml",
+]
+
+[tool.coverage.run]
+source = ["etfml"]
+
+[tool.coverage.report]
+fail_under = 90
+show_missing = true
+skip_covered = true
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+# E/W: estilo · F: errores (variables sin usar, nombres indefinidos) · I: orden de imports
+# B: bugs frecuentes · UP: sintaxis moderna de Python
+select = ["E4", "E7", "E9", "F", "W", "I", "B", "UP"]

@@ -1,7 +1,7 @@
 """Señal en vivo y flujo completo de rebalanceo contra un IB falso (sin red)."""
 import json
 from dataclasses import replace
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from types import SimpleNamespace
 
 import pandas as pd
@@ -66,10 +66,15 @@ class FakeIB:
         return [SimpleNamespace(contract=SimpleNamespace(symbol=s, secType="STK"), position=q, marketValue=q * 100.0)
                 for s, q in self.positions.items()]
 
+    unknown: set = set()
+
     def qualifyContracts(self, *contracts):
+        ok = []
         for i, c in enumerate(contracts):
-            c.conId = 1000 + i
-        return list(contracts)
+            if c.symbol not in self.unknown:
+                c.conId = 1000 + i
+                ok.append(c)
+        return ok  # como ib_insync: devuelve solo los que reconoció
 
     def placeOrder(self, contract, order):
         self.placed.append((contract.symbol, order.action, order.totalQuantity, order.orderType))
@@ -77,7 +82,7 @@ class FakeIB:
         return FakeTrade(contract, order)
 
     def reqExecutions(self, execFilter=None):
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         return [SimpleNamespace(
             contract=SimpleNamespace(symbol=sym, secType="STK"),
             execution=SimpleNamespace(execId=f"X{i}", time=now, acctNumber=self.account,
@@ -146,6 +151,20 @@ def test_execute_sells_before_buying_and_ignores_outside_positions(wired, monkey
     # el seguimiento corre (queda pendiente: los datos sintéticos no llegan a la fecha de hoy)
     assert cli.main(["seguimiento"]) == 0
     assert (cfg.logs_dir / "seguimiento.csv").exists()
+
+
+def test_unknown_ticker_stops_before_sending_any_order(wired, monkeypatch, capsys):
+    cfg, fake = wired
+    tickers = list(cfg.universe.tickers)
+    fake.unknown = set(tickers[1::2])                                # la mitad del universo
+    monkeypatch.setattr("builtins.input", lambda _: "SI")
+    assert cli.main(["rebalancear", "--ejecutar"]) == 2
+    assert fake.placed == []                                         # ni siquiera las ventas válidas
+    assert fake.disconnected
+    err = capsys.readouterr().err
+    assert "IB no reconoció" in err
+    named = err.split("IB no reconoció estos tickers:")[1].split()
+    assert named and {t.strip(",") for t in named} <= fake.unknown
 
 
 def test_llenados_command_saves_todays_fills(wired):

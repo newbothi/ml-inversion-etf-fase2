@@ -40,6 +40,7 @@ def test_mom12_compares_against_cash():
     assert sig["mom12"].iloc[12:].eq(False).all()  # sube, pero menos que la caja
 
 
+@pytest.mark.slow
 def test_changing_the_future_does_not_change_the_past(setup):
     cfg, market = setup
     cut = pd.Timestamp("2015-06-30")  # último día hábil de junio: su señal no puede ver julio
@@ -59,6 +60,7 @@ def test_changing_the_future_does_not_change_the_past(setup):
             np.testing.assert_allclose(sa.loc[done, "net"], sb.loc[done, "net"])
 
 
+@pytest.mark.slow
 def test_costs_only_when_switching(setup):
     cfg, market = setup
     res = run_trend(cfg, market, TODAY)
@@ -72,6 +74,7 @@ def test_costs_only_when_switching(setup):
         assert res.verdicts is None
 
 
+@pytest.mark.slow
 def test_all_strategies_share_the_period_and_benchmark_is_fully_invested(setup):
     cfg, market = setup
     res = run_trend(cfg, market, TODAY)
@@ -83,6 +86,7 @@ def test_all_strategies_share_the_period_and_benchmark_is_fully_invested(setup):
     np.testing.assert_allclose(res.simulations[BENCHMARK]["gross"], fwd.loc[idx, "SYN01"])
 
 
+@pytest.mark.slow
 def test_holdings_follow_the_signal(setup):
     cfg, market = setup
     res = run_trend(cfg, market, TODAY)
@@ -91,6 +95,7 @@ def test_holdings_follow_the_signal(setup):
         assert (res.simulations[v.key]["holdings"].to_numpy() == expected).all()
 
 
+@pytest.mark.slow
 def test_verdict_levels_are_consistent(setup):
     cfg, market = setup
     res = run_trend(cfg, market, TODAY)

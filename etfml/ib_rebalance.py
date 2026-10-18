@@ -138,8 +138,10 @@ def execute_orders(ib, plan: pd.DataFrame, order_type: str, wait_seconds: int = 
     to_send = plan[plan["orden"].isin([SELL, BUY])]
     contracts = {t: Stock(t, "SMART", "USD") for t in to_send["ticker"]}
     if contracts:
-        qualified = ib.qualifyContracts(*contracts.values())
-        bad = [t for t, q in zip(contracts, qualified) if q is None or not getattr(q, "conId", 0)]
+        # qualifyContracts completa cada contrato en el mismo objeto (le asigna conId). Se revisan los originales
+        # porque, según la versión de ib_async, la lista que devuelve omite los que fallan o trae None en su lugar.
+        ib.qualifyContracts(*contracts.values())
+        bad = [t for t, c in contracts.items() if not getattr(c, "conId", 0)]
         if bad:
             raise RuntimeError(f"IB no reconoció estos tickers: {', '.join(bad)}")
 

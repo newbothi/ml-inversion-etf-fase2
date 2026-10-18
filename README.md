@@ -1,5 +1,7 @@
 # ml-inversion-etf
 
+[![Tests](https://github.com/newbothi/ml-inversion-etf-fase2/actions/workflows/tests.yml/badge.svg)](https://github.com/newbothi/ml-inversion-etf-fase2/actions/workflows/tests.yml)
+
 Rotación mensual de ETFs con machine learning, evaluada con walk-forward y conectada a la cuenta **paper** de Interactive Brokers.
 
 Cada fin de mes, tres modelos (Ridge, regresión logística y LightGBM) y su ensamble puntúan 14 ETFs líquidos según qué tan probable es que le ganen al promedio del grupo el mes siguiente. La estrategia compra los 3 mejores. Todo se compara contra baselines sin machine learning: comprar y mantener SPY, igual peso en todos y momentum 12-1.
@@ -109,7 +111,25 @@ python -m pytest
 python -m etfml backtest --sintetico
 ```
 
-Los 91 tests verifican, entre otras cosas, que **cambiar precios futuros no cambia ninguna feature ni señal del pasado** (sin fuga de información), que los modelos encuentran una señal plantada en datos sintéticos, que **no inventan señal en ruido puro**, que el seguimiento de la fase 2 reconstruye bien una cuenta simulada día a día y que el Sharpe deflactado calza con su fórmula y que el simulador de aportes reproduce exacto los casos que se pueden calcular a mano (incluida la conversión a pesos de hoy y la calculadora de metas). El backtest sintético genera un reporte en `reportes\` con números inventados, solo para ver el formato.
+Los 92 tests verifican, entre otras cosas, que **cambiar precios futuros no cambia ninguna feature ni señal del pasado** (sin fuga de información), que los modelos encuentran una señal plantada en datos sintéticos, que **no inventan señal en ruido puro**, que el seguimiento de la fase 2 reconstruye bien una cuenta simulada día a día y que el Sharpe deflactado calza con su fórmula y que el simulador de aportes reproduce exacto los casos que se pueden calcular a mano (incluida la conversión a pesos de hoy y la calculadora de metas). El backtest sintético genera un reporte en `reportes\` con números inventados, solo para ver el formato.
+
+### Control de calidad
+
+En cada push, GitHub Actions ([`.github/workflows/tests.yml`](.github/workflows/tests.yml)) revisa el código con Ruff y corre todos los tests con Python 3.12 y 3.13, pandas 2.2 y 3.0, en Linux y en Windows. Falla si:
+
+- algún test no pasa,
+- la cobertura baja del 90 % (hoy es 94 %),
+- pandas o numpy avisan que algo del código dejará de funcionar en su próxima versión (esos avisos se tratan como errores),
+- Ruff encuentra errores comunes, imports desordenados o sintaxis anticuada.
+
+Para hacer lo mismo en tu PC:
+
+```powershell
+pip install -r requirements-dev.txt
+python -m pytest -m "not slow"        # pasada rápida mientras programas (~15 s, omite 9 tests lentos)
+python -m pytest --cov                # todos los tests, con el informe de cobertura
+ruff check .                          # linter (ruff check --fix . corrige lo automático)
+```
 
 ---
 
@@ -362,6 +382,10 @@ Supuestos que conviene revisar en `config.toml`: el costo de cambiar pesos a dó
 ml-inversion-etf/
 ├── config.toml            todos los parámetros
 ├── requirements.txt
+├── requirements-dev.txt   + pytest-cov y ruff (control de calidad)
+├── pyproject.toml         configuración de pytest, cobertura y ruff
+├── .github/workflows/
+│   └── tests.yml          CI: ruff y tests en 5 combinaciones de Python, pandas y sistema
 ├── etfml/
 │   ├── __main__.py        comandos
 │   ├── config.py          carga y valida config.toml
@@ -381,7 +405,7 @@ ml-inversion-etf/
 │   ├── savings.py         simulador de aportes, escenarios y calculadora de metas
 │   ├── savings_report.py  reporte HTML del simulador
 │   └── external.py        dólar y UF (mindicador.cl), historia larga (Kenneth French) e IPC de EE.UU. (FRED)
-├── tests/                 91 tests
+├── tests/                 92 tests (9 marcados como lentos)
 ├── experimentos/
 │   └── registro.csv       cada estrategia evaluada con datos reales (se sube a Git)
 ├── datos/                 precios, dólar y UF, historia larga (se crea solo)

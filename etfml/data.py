@@ -138,7 +138,7 @@ def load_cache(cfg: Config, tickers: list[str] | None = None) -> MarketData | No
     tickers = list(tickers or cfg.universe.tickers)
     if not set(tickers).issubset(close.columns):
         return None
-    if close.index.min() > pd.Timestamp(cfg.universe.start) + pd.Timedelta(days=10):
+    if close.index.min() > pd.Timestamp(cfg.universe.start) + pd.DateOffset(days=10):
         return None
     macro = None
     if cfg.use_macro:

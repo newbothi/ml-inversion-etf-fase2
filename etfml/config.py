@@ -130,7 +130,7 @@ class Config:
         """Tickers que se descargan además del universo (los usa el experimento de tendencia)."""
         return tuple(t for t in dict.fromkeys(self.trend.tickers) if t not in self.universe.tickers)
 
-    def with_universe(self, tickers: list[str], benchmark: str) -> "Config":
+    def with_universe(self, tickers: list[str], benchmark: str) -> Config:
         """Copia de la config con otro universo (se usa para los datos sintéticos)."""
         return replace(self, universe=replace(self.universe, tickers=tuple(tickers), benchmark=benchmark))
 

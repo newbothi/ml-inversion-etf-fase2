@@ -45,6 +45,7 @@ def wired(tmp_path, monkeypatch):
     return cfg
 
 
+@pytest.mark.slow
 def test_tendencia_registers_its_variants_and_warns_without_phase1(wired, capsys):
     assert cli.main(["tendencia"]) == 0
     out = capsys.readouterr().out
@@ -57,6 +58,7 @@ def test_tendencia_registers_its_variants_and_warns_without_phase1(wired, capsys
     assert "Registro de experimentos (4 pruebas)" in html
 
 
+@pytest.mark.slow
 def test_full_flow_counts_every_trial_once(wired, capsys):
     assert cli.main(["backtest"]) == 0
     assert len(load_registry(wired)) == 5           # 4 modelos + momentum
@@ -70,12 +72,14 @@ def test_full_flow_counts_every_trial_once(wired, capsys):
     assert "9 prueba(s) registradas" in capsys.readouterr().out
 
 
+@pytest.mark.slow
 def test_synthetic_runs_never_register(wired):
     assert cli.main(["backtest", "--sintetico"]) == 0
     assert cli.main(["tendencia", "--sintetico"]) == 0
     assert load_registry(wired).empty
 
 
+@pytest.mark.slow
 def test_changing_costs_counts_as_a_new_trial(wired, monkeypatch):
     assert cli.main(["tendencia"]) == 0
     pricier = replace(wired, costs=replace(wired.costs, slippage_bps=10.0))

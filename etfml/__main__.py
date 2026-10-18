@@ -268,9 +268,18 @@ def cmd_senal(args, cfg) -> int:
 
 
 def cmd_rebalancear(args, cfg) -> int:
-    from .ib_rebalance import (build_execution_record, check_account_allowed, connect, execute_orders,
-                               fetch_fills, log_orders, plan_orders, save_execution_record, save_fills,
-                               snapshot_account)
+    from .ib_rebalance import (
+        build_execution_record,
+        check_account_allowed,
+        connect,
+        execute_orders,
+        fetch_fills,
+        log_orders,
+        plan_orders,
+        save_execution_record,
+        save_fills,
+        snapshot_account,
+    )
 
     sig = _signal(args, cfg)
     universe = list(cfg.universe.tickers)

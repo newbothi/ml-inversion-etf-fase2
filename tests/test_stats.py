@@ -3,8 +3,13 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 
-from etfml.stats import (deflated_sharpe, expected_max_sharpe, expected_max_standard_normal,
-                         probabilistic_sharpe, sharpe_per_period)
+from etfml.stats import (
+    deflated_sharpe,
+    expected_max_sharpe,
+    expected_max_standard_normal,
+    probabilistic_sharpe,
+    sharpe_per_period,
+)
 
 
 def test_expected_max_matches_simulation():

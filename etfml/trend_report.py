@@ -9,13 +9,13 @@ import pandas as pd
 from .config import Config
 from .metrics import annual_returns, drawdown, equity_curve
 from .report import CSS, ICON_NO, ICON_OK, JS, _chart, _esc, _num, _pct, _table, _x_labels
+from .stats import DSR_THRESHOLD
+from .trend import BENCHMARK, LEVEL_TEXT, TrendResult
 
 ICON_MAYBE = ('<svg class="icon" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.5" fill="none" '
               'stroke="currentColor" stroke-width="2"/><path d="M5.5 8h5" stroke="currentColor" stroke-width="2" '
               'stroke-linecap="round"/></svg>')
 STATUS = {"pasa": ("good", ICON_OK), "prometedor": ("warn", ICON_MAYBE), "no_pasa": ("bad", ICON_NO)}
-from .stats import DSR_THRESHOLD
-from .trend import BENCHMARK, LEVEL_TEXT, TrendResult
 
 BENCHMARK_SLOT = 5  # mismo color que "Comprar y mantener" en el reporte de la fase 1
 

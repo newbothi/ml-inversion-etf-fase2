@@ -1,6 +1,23 @@
+# Entorno y cachés de Python
 .venv/
 __pycache__/
+*.pyc
 .pytest_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+
+# Generado al correr el proyecto (datos de mercado, reportes y registros de tu cuenta de IB)
 datos/
 reportes/
 registros/
+
+# Editores y sistema
+.vs/
+.vscode/
+.idea/
+.env
+Thumbs.db
+desktop.ini

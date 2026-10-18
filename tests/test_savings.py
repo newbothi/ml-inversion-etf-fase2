@@ -10,10 +10,24 @@ import etfml.data as data_mod
 import etfml.external as ext
 from etfml.config import DEFAULT_SAVINGS, load_config
 from etfml.data import synthetic_market_data
-from etfml.savings import (PORTFOLIOS, Scenario, Scheme, goal_table, ib_commission, investment_cost,
-                           long_scenarios, money_weighted_return, monthly_returns, pesos_scenario,
-                           required_contribution, run_windows, scenario_comparison, simulate_window,
-                           to_real_usd, usd_scenario)
+from etfml.savings import (
+    PORTFOLIOS,
+    Scenario,
+    Scheme,
+    goal_table,
+    ib_commission,
+    investment_cost,
+    long_scenarios,
+    money_weighted_return,
+    monthly_returns,
+    pesos_scenario,
+    required_contribution,
+    run_windows,
+    scenario_comparison,
+    simulate_window,
+    to_real_usd,
+    usd_scenario,
+)
 
 FREE = replace(DEFAULT_SAVINGS, fx_spread=0.0, dividend_drag=0.0, btg_order_fee=0.0, btg_min_order=0.0,
                ib_swift_fee=0.0, ib_min_fee=0.0, ib_per_share=0.0, ib_max_pct=0.0)
